@@ -2,5 +2,6 @@
     "files.associations": {
         "reservation.h": "c",
         "stdio.h": "c"
-    }
+    },
+    "todo-tree.tree.scanMode": "open files"
 }
