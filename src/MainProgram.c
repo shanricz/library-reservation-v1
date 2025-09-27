@@ -2,6 +2,7 @@
 #include "headers/database.h"
 #include "headers/reservation.h"
 
+//db connection (global)
 sqlite3 *db;
 
 int main() {
@@ -15,10 +16,20 @@ int main() {
         pause_screen();
         return 1;
     }
+
+    printf("Welcome to the Library Consultation Room Reservation System!\n");
+
+    // Main program loop
+    main_menu();
+
+    // Close db connection
+    close_database();
+    printf("\nThank you for using the Library Reservation System!\n");
+    
     return 0;
 }
 
-/* TODO: main(): Entry point. Initializes the database, shows the welcome message, and starts the main menu loop.
+/* 
 TODO: main_menu(): Displays the main menu and handles user choices (view schedule, make/cancel/search reservations, exit).
 TODO: view_daily_schedule(): Prompts for a date, validates it, and displays all reservations for that day.
 TODO: make_reservation(): Collects reservation details, validates input, checks for conflicts, and inserts a new reservation.
