@@ -4,6 +4,13 @@
 #include <stdlib.h>
 #include <string.h>
 
+//Const
+#define MAX_NAME_LENGTH 100
+#define MAX_DATE_LENGTH 11
+#define MAX_TIME_LENGTH 8
+#define DATABASE_PATH "data/library_reservations.db"
+
+
 /* TODO: initialize_database(): Opens the SQLite database and creates tables if they don’t exist.
 TODO: close_database(): Closes the database connection.
 TODO: create_tables(): Creates the reservations table if it doesn’t exist.
