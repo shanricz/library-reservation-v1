@@ -10,7 +10,7 @@ int initialize_database();
 int create_tables();
 int close_database();
 int check_time_conflict(const char* date, const char* start_time, const char* end_time);
-int insert_reservation(const char* name, const char* date, const char* start_time, const char* end_time, const char* email, const char* student_num, int reservation_id);
+int insert_reservation(const char* name, const char* student_num, const char* date, const char* start_time, const char* end_time, const char* reservation_id, const char* email);
 int delete_reservation(int reservation_id);
 int get_reservations_by_date(const char* date);
 int get_reservations_by_student_num(const char* student_num);

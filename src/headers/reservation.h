@@ -11,17 +11,19 @@
 #define MAX_EMAIL_LENGTH 100
 #define MAX_DATE_LENGTH 11
 #define MAX_TIME_LENGTH 8
-#define MAX_RESERVATION_ID_LENGTH 10
+#define MAX_RESERVATION_ID_LENGTH 11
+#define MAX_STUD_ID_LENGTH 11
 
 //Reservation Struct
 typedef struct {
     int id;
     char name[MAX_NAME_LENGTH];
-    char email[MAX_EMAIL_LENGTH];
+    char student_num[MAX_STUD_ID_LENGTH]; //Stud num == 10 chars + null terminator
     char date[MAX_DATE_LENGTH];
     char start_time[MAX_TIME_LENGTH];
     char end_time[MAX_TIME_LENGTH];
-    char student_num[11]; //Stud num == 10 chars + null terminator
+    char reservation_id[MAX_RESERVATION_ID_LENGTH];
+    char email[MAX_EMAIL_LENGTH];
 } Reservation;
 
 //Function Declarations
