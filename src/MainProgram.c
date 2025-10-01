@@ -210,10 +210,18 @@ void search_reservation(){
 
 void clear_screen(){
     //clear logic here
+    #ifdef _WIN32
+    system("cls");
+    #else
+    system("clear");
+    #endif
 }
 
 void pause_screen(){
     //pause logic here
+    printf("\nPress enter to continue...");
+    getchar();
+    getchar(); //clears newline from previous input
 }
 
 /* TODO: view_daily_schedule(): Prompts for a date, validates it, and displays all reservations for that day.
