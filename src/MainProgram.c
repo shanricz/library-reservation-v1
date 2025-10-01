@@ -7,7 +7,7 @@ sqlite3 *db;
 
 int main() {
 
-    printf("--->LIBRARY CONSULTATION ROOM RESERVATION SYSTEM <---\n");
+    printf("---> LIBRARY CONSULTATION ROOM RESERVATION SYSTEM <---\n");
     printf("Initializing system...\n\n");
 
     //Initialize db
@@ -113,7 +113,6 @@ void make_reservation(){
     char date[MAX_DATE_LENTGH];
     char start_time[MAX_TIME_LENGTH];
     char end_time[MAX_TIME_LENGTH];
-    char email[MAX_EMAIL_LENGTH];
     char reservation_id[MAX_RESERVATION_ID_LENGTH];
 
     clear_screen();
@@ -189,19 +188,29 @@ void make_reservation(){
         return;
     }
 
-    //get email
-
 
     //reservation id (DATE TODAY, RESERVATION DATE, NUMBER OF RESERVATION TODAY)
 
     //create reservation
-    int result = insert_reservation(student_name, student_num, date, start_time, end_time, reservation_id, email);
+    int result = insert_reservation(student_name, student_num, date, start_time, end_time, reservation_id);
 
 
 }
 
 void cancel_reservation(){
     //cancel logic here
+    int choice;
+    int reservation_id;
+    char search_name[MAX_NAME_LENGTH];
+
+    clear_screen();
+    printf("CANCEL A RESERVATION\n");
+    printf("--------------------\n");
+    printf("Cancel by:\n");
+    printf("1. Reservation ID\n");
+    printf("2. Student Name\n");
+    printf("3. Return to Main Menu\n");
+    printf("Enter your choice: ");
 }
 
 void search_reservation(){

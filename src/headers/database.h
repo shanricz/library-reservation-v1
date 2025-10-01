@@ -10,13 +10,13 @@ int initialize_database();
 int create_tables();
 int close_database();
 int check_time_conflict(const char* date, const char* start_time, const char* end_time);
-int insert_reservation(const char* name, const char* student_num, const char* date, const char* start_time, const char* end_time, const char* reservation_id, const char* email);
-int delete_reservation(int reservation_id);
+int insert_reservation(const char* name, const char* student_num, const char* date, const char* start_time, const char* end_time, const char* reservation_id);
+int delete_reservation(const char* reservation_id);
 int get_reservations_by_date(const char* date);
 int get_reservations_by_student_num(const char* student_num);
-int get_reservations_by_id(int reservation_id);
+int get_reservations_by_id(const char* reservation_id);
 int get_all_reservations();
-int update_reservation(int reservation_id, const char* name, const char* date, const char* start_time, const char* end_time, const char* email, const char* student_num);
+int update_reservation(const char* reservation_id, const char* name, const char* date, const char* start_time, const char* end_time, const char* student_num);
 
 //Callback functions
 int callback_print_reservations(void* data, int argc, char** argv, char** azColName);
