@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-// Global database connection
+//database connection
 extern sqlite3* db;
 
 //Const
@@ -60,6 +60,7 @@ int create_tables() {
         sqlite3_free(err_msg);
         return 1;
     }
+    return 0;
 }
 
 
@@ -68,7 +69,7 @@ char sql[500];
 char* err_msg = 0;
 int conflict = 0;
 
-// SQL query to check for time conflicts
+// check for time conflicts
 char start_24[MAX_TIME_LENGTH], end_24[MAX_TIME_LENGTH];
 format_time_24hour((char*)start_time, start_24);
 format_time_24hour((char*)end_time, end_24);
@@ -94,12 +95,12 @@ int insert_reservation(const char* name, const char* student_num, const char* da
     char* err_msg = 0;
     char sql[500];
 
-    // Convert times to 24-hour format for storage
+    // convert to 24-hour format
     char start_24[MAX_TIME_LENGTH], end_24[MAX_TIME_LENGTH];
     format_time_24hour((char*)start_time, start_24);
     format_time_24hour((char*)end_time, end_24);
 
-    // SQL insert statement
+    // insert
     sprintf(sql, "INSERT INTO reservations (student_name, student_num, date, start_time, end_time, reservation_id) "
                  "VALUES ('%s', '%s', '%s', '%s', '%s', '%s');",
                  name, student_num, date, start_24, end_24, reservation_id);
@@ -119,7 +120,7 @@ int delete_reservation(const char* reservation_id) {
     char sql[200];
     char* err_msg = 0;
 
-    sprintf(sql, "DELETE FROM reservations WHERE id = '%s';", reservation_id);
+    sprintf(sql, "DELETE FROM reservations WHERE reservation_id = '%s';", reservation_id);
 
     int rc = sqlite3_exec(db, sql, 0, 0, &err_msg);
 
@@ -170,7 +171,7 @@ int get_reservations_by_id(const char* reservation_id) {
     char sql[200];
     char* err_msg = 0;
 
-    sprintf(sql, "SELECT * FROM reservations WHERE id = '%s';", reservation_id);
+    sprintf(sql, "SELECT * FROM reservations WHERE reservation_id = '%s';", reservation_id);
 
     int rc = sqlite3_exec(db, sql, callback_print_reservations, 0, &err_msg);
 
@@ -195,6 +196,26 @@ int get_all_reservations() {
         return 1;
     }
 
+    return 0;
+}
+
+// Callback implementations
+int callback_print_reservations(void* data, int argc, char** argv, char** azColName) {
+    (void)data;
+    for (int i = 0; i < argc; i++) {
+        const char* col = azColName[i] ? azColName[i] : "";
+        const char* val = argv[i] ? argv[i] : "NULL";
+        printf("%s%s", val, (i == argc - 1) ? "\n" : " | ");
+    }
+    return 0;
+}
+
+int callback_count_reservations(void* data, int argc, char** argv, char** azColName) {
+    (void)azColName;
+    if (argc > 0 && argv && argv[0]) {
+        int* out = (int*)data;
+        *out = atoi(argv[0]);
+    }
     return 0;
 }
 
@@ -223,12 +244,17 @@ int get_all_reservations() {
     return 0;
 }*/
 
-/* TODO: initialize_database(): Opens the SQLite database and creates tables if they don’t exist.
-TODO: close_database(): Closes the database connection.
-TODO: create_tables(): Creates the reservations table if it doesn’t exist.
-TODO: insert_reservation(student_name, date, start_time, end_time): Adds a new reservation to the database.
-TODO: delete_reservation(reservation_id): Removes a reservation by its ID.
-TODO: get_reservations_by_date(date): Retrieves and displays all reservations for a given date.
-TODO: search_reservations_by_name(name): Searches and displays reservations by student name.
-TODO: search_reservations_by_id(id): Searches and displays a reservation by its ID.
+/* DONE: initialize_database(): Opens the SQLite database and creates tables if they don’t exist.
+DONE: close_database(): Closes the database connection.
+DONE: create_tables(): Creates the reservations table if it doesn’t exist.
+DONE: insert_reservation(student_name, date, start_time, end_time): Adds a new reservation to the database.
+DONE: delete_reservation(reservation_id): Removes a reservation by its ID.
+DONE: get_reservations_by_date(date): Retrieves and displays all reservations for a given date.
+DONE: search_reservations_by_name(name): Searches and displays reservations by student name.
+DONE: search_reservations_by_id(id): Searches and displays a reservation by its ID.
+TODO: get_all_reservations(): Retrieves and displays all reservations in the database.
+TODO: update_reservation(reservation_id, ...): Updates details of an existing reservation.
+DONE: check_time_conflict(date, start_time, end_time): Checks if a new reservation conflicts with existing ones.
+DONE: callback_print_reservations(): Callback to print reservation details from SQL queries.
+DONE: callback_count_reservations(): Callback to count reservations from SQL queries.
 */

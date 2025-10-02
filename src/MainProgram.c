@@ -2,7 +2,7 @@
 #include "headers/database.h"
 #include "headers/reservation.h"
 
-//db connection (global)
+//db connection
 sqlite3 *db;
 
 int main() {
@@ -70,7 +70,7 @@ void main_menu(){
 }
 
 void view_daily_schedule() {
-    char date[MAX_DATE_LENTGH];
+    char date[MAX_DATE_LENGTH];
 
     clear_screen();
     printf("VIEW DAILY SCHEDULE\n");
@@ -110,7 +110,7 @@ void view_daily_schedule() {
 void make_reservation(){
     char student_name[MAX_NAME_LENGTH];
     char student_num[MAX_STUD_ID_LENGTH];
-    char date[MAX_DATE_LENTGH];
+    char date[MAX_DATE_LENGTH];
     char start_time[MAX_TIME_LENGTH];
     char end_time[MAX_TIME_LENGTH];
     char reservation_id[MAX_RESERVATION_ID_LENGTH];
@@ -131,8 +131,8 @@ void make_reservation(){
 
     //get stud num [limited character]
     printf("Enter student number: ");
-    if(scanf("%s"), student_num){
-        printf("Error: Wrong student number format.");
+    if(scanf("%s", student_num) != 1){
+        printf("Error: Wrong student number format.\n");
         pause_screen();
         return;
     }
@@ -140,9 +140,9 @@ void make_reservation(){
     //get date
     printf("Enter desired date [MM/DD/YYYY]: ");
     if(scanf("%s", date) != 1){
-        printf("Error: Wrong date format.");
+        printf("Error: Wrong date format.\n");
         pause_screen();
-        return 1;
+        return;
     }
 
     //time start
@@ -155,7 +155,7 @@ void make_reservation(){
 
     //end time
     printf("Enter end time (HH:MM AM/PM): ");
-    if (scanf("%s", start_time) != 1){
+    if (scanf("%s", end_time) != 1){
         printf("Error reading end time.\n");
         pause_screen();
         return;
@@ -175,7 +175,7 @@ void make_reservation(){
         return;
     }
 
-    if (!validate_date_range(start_time, end_time)){
+    if (!validate_time_range(start_time, end_time)){
         printf("End time must be after the start time.\n");
         pause_screen();
         return;
@@ -193,6 +193,12 @@ void make_reservation(){
 
     //create reservation
     int result = insert_reservation(student_name, student_num, date, start_time, end_time, reservation_id);
+    if (result == 0) {
+        printf("Reservation created successfully.\n");
+    } else {
+        printf("Failed to create reservation.\n");
+    }
+    pause_screen();
 
 
 }
@@ -213,7 +219,7 @@ void cancel_reservation(){
     printf("Enter your choice: ");
 }
 
-void search_reservation(){
+void search_reservations(){
     //search logic here
 }
 
@@ -233,10 +239,12 @@ void pause_screen(){
     getchar(); //clears newline from previous input
 }
 
+
+
 /* TODO: view_daily_schedule(): Prompts for a date, validates it, and displays all reservations for that day.
 TODO: make_reservation(): Collects reservation details, validates input, checks for conflicts, and inserts a new reservation.
 TODO: cancel_reservation(): Lets the user cancel a reservation by ID or student name.
 TODO: search_reservations(): Allows searching for reservations by student name or reservation ID.
-TODO: clear_screen(): Clears the console screen (platform-dependent).
-TODO: pause_screen(): Pauses the screen until the user presses Enter.
+DONE: clear_screen(): Clears the console screen (platform-dependent).
+DONE: pause_screen(): Pauses the screen until the user presses Enter.
 */

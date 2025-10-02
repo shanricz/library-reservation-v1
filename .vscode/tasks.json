@@ -9,7 +9,6 @@
                 "-g",
                 "src/MainProgram.c",
                 "src/db.c",
-                "src/email.c",
                 "src/reservation.c",
                 "src/utilities.c",
                 "src/sqlite3.c",

@@ -9,3 +9,8 @@ Input sanitization.
 Date/time formatting helpers.
 Error handling/logging.
 */
+
+void clear_input_buffer() {
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF);
+}
