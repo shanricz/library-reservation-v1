@@ -8,113 +8,112 @@
 
 int validate_date(const char* date) {
     // Expected format: MM/DD/YYYY
-    if (strlen(date) != 10)
-    return 0; //check length
-    if (date[2] != '/' || date[5] != '/')
-    return 0; //check slashes(seperators)
-
-    if (!isdigit(date[0]) || !isdigit(date[1]) ||
-        !isdigit(date[3]) || !isdigit(date[4]) ||
-        !isdigit(date[6]) || !isdigit(date[7]) ||
-        !isdigit(date[8]) || !isdigit(date[9]))
-    return 0; //check digits
-
-    //extract month, day, year
+    if (strlen(date) != 10) {
+        return 0; // Invalid length
+    }
+    
+    // Check format MM/DD/YYYY
+    if (date[2] != '/' || date[5] != '/') {
+        return 0; // Invalid separators
+    }
+    
+    // Check if all other characters are digits
+    for (int i = 0; i < 10; i++) {
+        if (i == 2 || i == 5) continue; // Skip separators
+        if (date[i] < '0' || date[i] > '9') {
+            return 0; // Non-digit character
+        }
+    }
+    
+    // Extract month, day, year
     int month = (date[0] - '0') * 10 + (date[1] - '0');
     int day = (date[3] - '0') * 10 + (date[4] - '0');
-    int year = (date[6] - '0') * 1000 + (date[7] - '0')
-    * 100 + (date[8] - '0') * 10 + (date[9] - '0');
-
-    //get current year
-    time_t now = time(NULL);
-    struct tm* t = localtime(&now);
-    int current_year = t->tm_year + 1900;
-
-    //basic validations
-    if (month < 1 || month > 12) return 0;
-    if (day < 1 || day > 31) return 0; // Simplified check, not accounting for month lengths or leap years
-    if (year < current_year || year > current_year) return 0;
+    int year = (date[6] - '0') * 1000 + (date[7] - '0') * 100 + 
+               (date[8] - '0') * 10 + (date[9] - '0');
     
+    // Basic validation
+    if (month < 1 || month > 12) return 0;
+    if (day < 1 || day > 31) return 0;
+    if (year < 2024 || year > 2030) return 0; // Reasonable year range
+    
+    // Check days in month
     int days_in_month[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
     
-    if (month == 2 && ((year % 4 == 0 && year % 100 != 0) || (year % 400 == 0))){
-        days_in_month[1] = 29; // Leap year
+    // Leap year check
+    if (month == 2 && ((year % 4 == 0 && year % 100 != 0) || (year % 400 == 0))) {
+        days_in_month[1] = 29;
     }
-
+    
     if (day > days_in_month[month - 1]) return 0; // Invalid day for month
-
-    return 1; //valid date
+    
+    return 1; // Valid date
 }
 
 int validate_time(const char* time) {
-    if (time == NULL) return 0;  // Null check
-    size_t len = strlen(time);
-    if (len < 7 || len > 8) return 0;  // Only 7 or 8 chars allowed
-    // Determine positions based on length
-    int colon_pos = (len == 8) ? 2 : 1;  // Colon after 2 digits (8-char) or 1 digit (7-char)
-    int space_pos = (len == 8) ? 5 : 4;  // Space before AM/PM
-    int ampm_start = space_pos + 1;      // Start of AM/PM (6 or 5)
-    int ampm_end = space_pos + 2;        // End of AM/PM (7 or 6)
-    // Check separators: colon and space
-    if (time[colon_pos] != ':') return 0;
-    if (time[space_pos] != ' ') return 0;
-    // Check AM/PM (case-insensitive)
-    char ampm_first = toupper(time[ampm_start]);
-    char ampm_second = toupper(time[ampm_end]);
-    if ((ampm_first != 'A' && ampm_first != 'P') || ampm_second != 'M') {
-        return 0;
+    // Expected format: HH:MM AM/PM
+    if (strlen(time) < 6 || strlen(time) > 8) {
+        return 0; // Invalid length
     }
-    // Check digits: hour (before colon), minutes (after colon, before space)
-    // Hour digits: positions 0 to colon_pos-1
+    
+    // Check for AM/PM
+    char* ampm = strstr(time, "AM");
+    if (!ampm) ampm = strstr(time, "PM");
+    if (!ampm) return 0; // No AM/PM found
+    
+    // Check if AM/PM is at the end
+    if (strcmp(ampm, "AM") != 0 && strcmp(ampm, "PM") != 0) {
+        return 0; // AM/PM not at the end
+    }
+    
+    // Extract time part (before AM/PM)
+    int time_len = ampm - time;
+    if (time_len < 4 || time_len > 5) return 0; // Invalid time length
+    
+    // Check for colon
+    int colon_pos = -1;
+    for (int i = 0; i < time_len; i++) {
+        if (time[i] == ':') {
+            colon_pos = i;
+            break;
+        }
+    }
+    
+    if (colon_pos == -1 || colon_pos == 0 || colon_pos == time_len - 1) {
+        return 0; // No colon or colon in wrong position
+    }
+    
+    // Check hour part
     for (int i = 0; i < colon_pos; i++) {
-        if (!isdigit(time[i])) return 0;
+        if (time[i] < '0' || time[i] > '9') return 0;
     }
-    // Minute digits: always 2 positions after colon
-    int min_start = colon_pos + 1;
-    if (!isdigit(time[min_start]) || !isdigit(time[min_start + 1])) return 0;
-    // Extract and parse hour (1 or 2 digits)
-    int hour;
-    if (len == 7) {
-        // Single digit: e.g., time[0] = '1'
-        hour = time[0] - '0';
-    } else {
-        // Two digits: e.g., time[0]-'0'*10 + time[1]-'0'
-        hour = (time[0] - '0') * 10 + (time[1] - '0');
+    
+    // Check minute part
+    for (int i = colon_pos + 1; i < time_len; i++) {
+        if (time[i] < '0' || time[i] > '9') return 0;
     }
-
-    return 1; //valid time
+    
+    // Extract and validate hour and minute
+    int hour = 0, minute = 0;
+    sscanf(time, "%d:%d", &hour, &minute);
+    
+    if (hour < 1 || hour > 12) return 0;
+    if (minute < 0 || minute > 59) return 0;
+    
+    return 1; // Valid time
 }
 
 int validate_time_range(const char* start_time, const char* end_time) {
-    // Convert times to 24-hour format for comparison
-    char start_24[MAX_TIME_LENGTH];
-    char end_24[MAX_TIME_LENGTH];
+    char start_24[MAX_TIME_LENGTH], end_24[MAX_TIME_LENGTH];
+    
     format_time_24hour((char*)start_time, start_24);
     format_time_24hour((char*)end_time, end_24);
-
-    // Compare times
-    if (compare_times(start_24, end_24) >= 0) {
-        return 0; // End time is not after start time
-    }
-    return 1; // Valid time range
+    
+    return compare_times(start_24, end_24) < 0;
 }
 
 int is_time_conflict(const char* start1, const char* end1, const char* start2, const char* end2) {
-    // Convert times to 24-hour format for comparison
-    char start1_24[MAX_TIME_LENGTH];
-    char end1_24[MAX_TIME_LENGTH];
-    char start2_24[MAX_TIME_LENGTH];
-    char end2_24[MAX_TIME_LENGTH];
-    format_time_24hour((char*)start1, start1_24);
-    format_time_24hour((char*)end1, end1_24);
-    format_time_24hour((char*)start2, start2_24);
-    format_time_24hour((char*)end2, end2_24);
-
-    // Check for overlap
-    if (compare_times(start1_24, end2_24) < 0 && compare_times(start2_24, end1_24) < 0) {
-        return 1; // Conflict exists
-    }
-    return 0; // No conflict
+    // Check if time ranges overlap
+    return (compare_times(start1, end2) < 0 && compare_times(end1, start2) > 0);
 }
 
 void format_time_12hour(char* time_24, char* time_12) {

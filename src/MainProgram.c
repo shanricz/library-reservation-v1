@@ -1,6 +1,9 @@
 #include "headers/main.h"
 #include "headers/database.h"
 #include "headers/reservation.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 
 //db connection
 sqlite3 *db;
@@ -190,6 +193,21 @@ void make_reservation(){
 
 
     //reservation id (DATE TODAY, RESERVATION DATE, NUMBER OF RESERVATION TODAY)
+    generate_reservation_id(char* reservation_id, size_t sizeof(reservation_id));
+    printf("Generated Reservation ID: %s\n", reservation_id);
+
+    //confirm details
+    printf("\nPlease confirm your reservation details:\n");
+    printf("+-----+-------------------+-------------------+---------------------------+\n");
+    printf("| %-3s | %-17s | %-17s | %-25s |\n", "Reservation ID", "Date", "Start Time", "End Time", "Student Name");
+    printf("+-----+-------------------+-------------------+---------------------------+\n");
+    printf("Confirm reservation? (Y/N): ");
+    char confirm;
+    if (scanf(" %c", &confirm) != 1 || (confirm != 'Y' && confirm != 'y')) {
+        printf("Reservation cancelled by user.\n");
+        pause_screen();
+        return;
+    }
 
     //create reservation
     int result = insert_reservation(student_name, student_num, date, start_time, end_time, reservation_id);
@@ -201,6 +219,40 @@ void make_reservation(){
     pause_screen();
 
 
+}
+    void generate_reservation_id(char* reservation_id, sizeof(char* reservation_id)){
+    // date today, date of reservation, number of reservation today
+    // Example: 100425-101025-001 (MonthDayYear-MonthDayYear-Number)
+
+    time_t raw_time; // Stores the calendar time as a time_t object
+
+    struct tm *local_time_info; // Pointer to a tm structure for local time
+
+    char today_str[7]; // String to hold today's date in MMDDYY format
+
+    char date[7]; // String to hold reservation date in MMDDYY format
+
+    int reservation_count = 0; // Variable to hold the count of reservations for today
+    
+    time(&raw_time); // Get the current calendar time
+    
+    local_time_info = localtime(&raw_time); // Convert to local time structure
+    
+    strftime(today_str, sizeof(today_str), "%m%d%y", local_time_info); // Format today's date
+    
+    // Count existing reservations for today
+    char sql[100];
+    char* err_msg = 0;
+    sprintf(sql, "SELECT COUNT(*) FROM reservations WHERE date = '%s';", today_str);
+    int rc = sqlite3_exec(db, sql, callback_count_reservations, &reservation_count, &err_msg);
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "SQL error: %s\n", err_msg);
+        sqlite3_free(err_msg);
+        reservation_count = 0; // Default to 0 on error
+    }
+    // Generate reservation ID
+    sprintf(reservation_id, "%s-%s-%03d", today_str, date, reservation_count + 1);
+    return reservation_id;
 }
 
 void cancel_reservation(){
