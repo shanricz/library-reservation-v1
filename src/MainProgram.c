@@ -193,11 +193,11 @@ void make_reservation(){
 
 
     //reservation id (DATE TODAY, RESERVATION DATE, NUMBER OF RESERVATION TODAY)
-    generate_reservation_id(char* reservation_id, size_t sizeof(reservation_id));
-    printf("Generated Reservation ID: %s\n", reservation_id);
+    //generate_reservation_id(char* reservation_id, size_t sizeof(reservation_id));
+    //printf("Generated Reservation ID: %s\n", reservation_id);
 
     //confirm details
-    printf("\nPlease confirm your reservation details:\n");
+    /*printf("\nPlease confirm your reservation details:\n");
     printf("+-----+-------------------+-------------------+---------------------------+\n");
     printf("| %-3s | %-17s | %-17s | %-25s |\n", "Reservation ID", "Date", "Start Time", "End Time", "Student Name");
     printf("+-----+-------------------+-------------------+---------------------------+\n");
@@ -209,18 +209,11 @@ void make_reservation(){
         return;
     }
 
-    //create reservation
-    int result = insert_reservation(student_name, student_num, date, start_time, end_time, reservation_id);
-    if (result == 0) {
-        printf("Reservation created successfully.\n");
-    } else {
-        printf("Failed to create reservation.\n");
-    }
-    pause_screen();
+    
 
 
-}
-    void generate_reservation_id(char* reservation_id, sizeof(char* reservation_id)){
+}*/
+    /*void generate_reservation_id(char* reservation_id, sizeof(char* reservation_id)){
     // date today, date of reservation, number of reservation today
     // Example: 100425-101025-001 (MonthDayYear-MonthDayYear-Number)
 
@@ -253,6 +246,16 @@ void make_reservation(){
     // Generate reservation ID
     sprintf(reservation_id, "%s-%s-%03d", today_str, date, reservation_count + 1);
     return reservation_id;
+}*/
+
+//create reservation
+    int result = insert_reservation(student_name, student_num, date, start_time, end_time, reservation_id);
+    if (result == 0) {
+        printf("Reservation created successfully.\n");
+    } else {
+        printf("Failed to create reservation.\n");
+    }
+    pause_screen();
 }
 
 void cancel_reservation(){
