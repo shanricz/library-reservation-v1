@@ -17,6 +17,8 @@ int get_reservations_by_student_num(const char* student_num);
 int get_reservations_by_id(const char* reservation_id);
 int get_all_reservations();
 int update_reservation(const char* reservation_id, const char* name, const char* date, const char* start_time, const char* end_time, const char* student_num);
+int get_reservations_by_name(const char* name);
+
 
 //Callback functions
 int callback_print_reservations(void* data, int argc, char** argv, char** azColName);

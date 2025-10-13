@@ -10,7 +10,7 @@ extern sqlite3* db;
 //Const
 #define MAX_NAME_LENGTH 100
 #define MAX_DATE_LENGTH 11
-#define MAX_TIME_LENGTH 8
+#define MAX_TIME_LENGTH 10
 #define DATABASE_PATH "data/library_reservations.db"
 
 int close_database() {
@@ -199,13 +199,43 @@ int get_all_reservations() {
     return 0;
 }
 
+int get_reservations_by_name(const char* name) {
+    char sql[300];
+    char* err_msg = 0;
+
+    sprintf(sql, "SELECT * FROM reservations WHERE student_name LIKE '%%%s%%' ORDER BY date, start_time;", name);
+
+    int rc = sqlite3_exec(db, sql, callback_print_reservations, 0, &err_msg);
+
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "SQL error: %s\n", err_msg);
+        sqlite3_free(err_msg);
+        return 1;
+    }
+
+    return 0;
+}
+
 // Callback implementations
 int callback_print_reservations(void* data, int argc, char** argv, char** azColName) {
     (void)data;
-    for (int i = 0; i < argc; i++) {
-        const char* col = azColName[i] ? azColName[i] : "";
-        const char* val = argv[i] ? argv[i] : "NULL";
-        printf("%s%s", val, (i == argc - 1) ? "\n" : " | ");
+    (void)azColName;
+    
+    // Format: reservation_id | start_time | end_time | student_name
+    // Column order: id(0), student_name(1), student_num(2), date(3), start_time(4), end_time(5), reservation_id(6)
+    if (argc >= 7) {
+        const char* reservation_id = argv[6] ? argv[6] : "NULL";
+        const char* student_name = argv[1] ? argv[1] : "NULL";
+        const char* start_time = argv[4] ? argv[4] : "NULL";
+        const char* end_time = argv[5] ? argv[5] : "NULL";
+        
+        // Convert 24-hour times back to 12-hour format for display
+        char start_12[MAX_TIME_LENGTH], end_12[MAX_TIME_LENGTH];
+        format_time_12hour((char*)start_time, start_12);
+        format_time_12hour((char*)end_time, end_12);
+        
+        printf("| %-20s | %-17s | %-17s | %-25s |\n", 
+               reservation_id, start_12, end_12, student_name);
     }
     return 0;
 }

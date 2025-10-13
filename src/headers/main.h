@@ -11,7 +11,7 @@
 //Const Declarations
 #define MAX_NAME_LENGTH 100
 #define MAX_DATE_LENGTH 11
-#define MAX_TIME_LENGTH 8
+#define MAX_TIME_LENGTH 10
 #define DB_PATH "data/library_reservations.db"
 
 //Func Declarations
@@ -26,7 +26,7 @@ void pause_screen();
 
 // Utils
 void clear_input_buffer();
-void generate_reservation_id(char* out_id, size_t out_size);
+void generate_reservation_id(char* out_id, size_t out_size, const char* reservation_date);
 
 // Missing declarations
 int validate_date(const char* date);
