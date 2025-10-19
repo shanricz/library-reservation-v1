@@ -36,6 +36,7 @@ void main_menu(){
     int choice;
      do {
         clear_screen();
+        printf(">>>LIBRARY CONSULTATION ROOM RESERVATION SYSTEM<<<\n");
         printf("Main Menu:\n");
         printf("1. View Daily Schedule\n");
         printf("2. Make a Reservation\n");
@@ -121,17 +122,25 @@ void make_reservation(){
     clear_screen();
     printf("MAKE A RESERVATION\n");
 
+    //IT DOESNT ACCEPT SPACES
     //get stud name
-    printf("Enter student name: ");
-    if(scanf("%s", student_name) != 1){
+    /*
+    >>input
+    >>>if loop for validation? || 
+    */
+   clear_input_buffer(); // Clear input buffer
+   printf("Enter student name: ");
+    if(fgets(student_name, sizeof(student_name), stdin) == NULL){
         printf("Error reading input.\n");
         pause_screen();
         return;
-    };
+    }
 
     // Remove newline character
     student_name[strcspn(student_name, "\n")] = 0;
 
+
+    //LACKS VALIDATION
     //get stud num [limited character]
     printf("Enter student number: ");
     if(scanf("%s", student_num) != 1){
