@@ -10,7 +10,7 @@ A console-based reservation system designed to help librarians efficiently manag
 - **Edit Reservation**: Update/Edit existing booking by reservation ID
 - **Search Reservations**: Find bookings by student name or reservation ID
 - **Data Persistence**: SQLite database for reliable data storage
-- **OFFLINE***
+- **OFFLINE**
 
 ## Requirements
 
@@ -57,6 +57,7 @@ library-reservation-system/
 The system uses a single table `reservations` with the following structure:
 
 - `id`: Primary key (auto-increment)
+- `student_num`: Student's ID number (TEXT)
 - `student_name`: Student's name (TEXT)
 - `date`: Reservation date in MM/DD/YYYY format (TEXT)
 - `start_time`: Start time in 24-hour format (TEXT)
