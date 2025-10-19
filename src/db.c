@@ -18,7 +18,7 @@ int close_database() {
         sqlite3_close(db);
         db = NULL;
     }
-    return 0;
+    return 0; 
 }
 
 int initialize_database() {
