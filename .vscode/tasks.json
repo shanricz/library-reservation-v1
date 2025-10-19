@@ -3,7 +3,7 @@
         {
             "type": "cppbuild",
             "label": "Build LibraryReservation.exe",
-            "command": "E:\\MinGW\\bin\\gcc.exe",
+            "command": "gcc",
             "args": [
                 "-fdiagnostics-color=always",
                 "-g",
