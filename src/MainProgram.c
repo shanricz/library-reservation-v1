@@ -41,6 +41,7 @@ void main_menu(){
         printf("1. View Daily Schedule\n");
         printf("2. Make a Reservation\n");
         printf("3. Cancel a Reservation\n");
+        //TODO: LAGAY KAYO DITO BAGO, EDIT RESERVATION
         printf("4. Search Reservations\n");
         printf("5. Exit\n");
         printf("Enter your choice: ");
@@ -73,6 +74,10 @@ void main_menu(){
      } while (choice != 5);
 }
 
+/*TODO: MAKE SURE NA ON POINT VALIDATIONS NATIN, DI PWEDE MAG ENTER NG INVALID DATES/TIMES OR NG SPECIAL CHARACTERS NA DI PWEDE
+TODO: IMPROVE UI/UX, MAKE IT MORE INTERACIVE AND USER-FRIENDLY
+TODO: YUNG AUTOMATIC MAG AADD NG SLASH PARA DI NA HASSLE SA USER
+*/
 void view_daily_schedule() {
     char date[MAX_DATE_LENGTH];
 
@@ -111,6 +116,12 @@ void view_daily_schedule() {
     pause_screen();
 }
 
+/*
+TODO: MAKE SURE NA MAY VALIDATIONS
+TODO: INAACCEPT YUNG SPACES SA NAME
+TODO: MORE PRESENTABLE UI
+TODO: VALIDATION SA STUDENT NUMBER (LENGTH, FORMAT) LIKE KUNG PANO FORMAT SA  ID NATIN DAPAT GANON LANG IAACCEPT
+*/
 void make_reservation(){
     char student_name[MAX_NAME_LENGTH];
     char student_num[MAX_STUD_ID_LENGTH];
@@ -121,13 +132,8 @@ void make_reservation(){
 
     clear_screen();
     printf("MAKE A RESERVATION\n");
+    printf("------------------\n");
 
-    //IT DOESNT ACCEPT SPACES
-    //get stud name
-    /*
-    >>input
-    >>>if loop for validation? || 
-    */
    clear_input_buffer(); // Clear input buffer
    printf("Enter student name: ");
     if(fgets(student_name, sizeof(student_name), stdin) == NULL){
@@ -275,6 +281,9 @@ void generate_reservation_id(char* out_id, size_t out_size, const char* reservat
     snprintf(out_id, out_size, "%s-%s-%s", today_str, res_date_str, timestamp_str);
 }
 
+/*
+TODO: ETO WALA PA TALAGA, KAYO NA BAHALA IF PAANO NYO IIMPLEMENT; CHECK OTHER C FILE FOR REFERENCE || HEADERS
+*/
 void cancel_reservation(){
     //cancel logic here
     int choice;
@@ -286,11 +295,15 @@ void cancel_reservation(){
     printf("--------------------\n");
     printf("Cancel by:\n");
     printf("1. Reservation ID\n");
-    printf("2. Student Name\n");
-    printf("3. Return to Main Menu\n");
+    printf("2. Return to Main Menu\n");
     printf("Enter your choice: ");
 }
 
+/*
+TODO: VALIDATIONS
+TODO: MORE PRESENTABLE UI
+TODO: SEARCH BY NAME OR RESERVATION ID (KELANGAN TAMA YUNG INPUT)
+*/
 void search_reservations(){
     int choice;
     char search_term[MAX_NAME_LENGTH];
@@ -373,11 +386,4 @@ void pause_screen(){
 }
 
 
-
-/* TODO: view_daily_schedule(): Prompts for a date, validates it, and displays all reservations for that day.
-TODO: make_reservation(): Collects reservation details, validates input, checks for conflicts, and inserts a new reservation.
-TODO: cancel_reservation(): Lets the user cancel a reservation by ID or student name.
-TODO: search_reservations(): Allows searching for reservations by student name or reservation ID.
-DONE: clear_screen(): Clears the console screen (platform-dependent).
-DONE: pause_screen(): Pauses the screen until the user presses Enter.
-*/
+//TODO: EDIT RESERVATION FUNCTION NA DIN
