@@ -135,6 +135,7 @@ void make_reservation(){
     printf("------------------\n");
 
    clear_input_buffer(); // Clear input buffer
+
    printf("Enter student name: ");
     if(fgets(student_name, sizeof(student_name), stdin) == NULL){
         printf("Error reading input.\n");
