@@ -141,14 +141,72 @@ void make_reservation(){
     }
 
     //get date
-    printf("Enter desired date [MM/DD/YYYY]: ");
-    if(scanf("%s", date) != 1){
-        printf("Error: Wrong date format.\n");
+    // printf("Enter desired date [MM/DD/YYYY]: ");
+    // if(scanf("%s", date) != 1){
+    //     printf("Error: Wrong date format.\n");
+    //     pause_screen();
+    //     return;
+    // }
+
+    int month, day, year, mday;
+    printf("Select month:\n");
+    printf("1. January\n");
+    printf("2. February\n");
+    printf("3. March\n");
+    printf("4. April\n");
+    printf("5. May\n");
+    printf("6. June\n");
+    printf("7. July\n");
+    printf("8. August\n");
+    printf("9. September\n");
+    printf("10. October\n");
+    printf("11. November\n");
+    printf("12. December\n");
+    printf("Enter month (1-12): ");
+    scanf("%d", &month);
+
+    //tells user which month they picked
+    switch (month) {
+        case 1:  printf("You selected January.\n"); mday = 31; break;
+        case 2:  printf("You selected February.\n"); mday = 29; break;
+        case 3:  printf("You selected March.\n"); mday = 31; break;
+        case 4:  printf("You selected April.\n"); mday = 30; break;
+        case 5:  printf("You selected May.\n"); mday = 31; break;
+        case 6:  printf("You selected June.\t"); mday = 30; break;
+        case 7:  printf("You selected July.\n"); mday = 31; break;
+        case 8:  printf("You selected August.\n"); mday = 31; break;
+        case 9:  printf("You selected September.\n"); mday = 30; break;
+        case 10: printf("You selected October.\n"); mday = 31; break;
+        case 11: printf("You selected November.\n"); mday = 30; break;
+        case 12: printf("You selected December.\n"); mday = 31; break;
+        default:
+            printf("Error: Invalid month.");
+            pause_screen();
+            return;
+    }
+    //if day exceeds 31, show an error
+    printf("Enter day: ");
+    scanf("%d", &day);
+    if(day < 1 || day > mday) {
+        printf("Error: Invalid day for chosen month.");
         pause_screen();
         return;
     }
+    //automatically set the year
+    // printf("Enter year: ");
+    // scanf("%d", &year);
+
+    time_t now = time(NULL); // Grabs current time and stores it in variable now
+    struct tm *t = localtime(&now);
+    year = t->tm_year + 1900;
+
+    printf("Year has been automatically set to %d.\n", year);
+
+    // turn into mm/dd/yyyy format
+    snprintf(date, sizeof(date), "%02d/%02d/%04d", month, day, year);
 
     //time start
+    printf("Do not include a space between HH:MM and AM/PM (12:00PM)\n");
     printf("Enter start time (HH:MM AM/PM): ");
     if (scanf("%s", start_time) != 1){
         printf("Error reading start time.\n");
@@ -166,7 +224,7 @@ void make_reservation(){
 
     //validate date
     if (!validate_date(date)) {
-        printf("Invalid date format. Please use MM/DD/YYYY.\n");
+        printf("Invalid date format.\n");
         pause_screen();
         return;
     }
