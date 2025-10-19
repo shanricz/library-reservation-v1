@@ -7,7 +7,6 @@
 #include <string.h>
 #include <time.h>
 
-
 //Const Declarations
 #define MAX_NAME_LENGTH 100
 #define MAX_DATE_LENGTH 11
