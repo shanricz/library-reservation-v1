@@ -134,7 +134,8 @@ void make_reservation(){
     printf("MAKE A RESERVATION\n");
     printf("------------------\n");
 
-   clear_input_buffer(); // Clear input buffer
+   
+    clear_input_buffer(); // Clear input buffer (THIS ALLOWS USER TO HAVE SPACES IN THEIR NAME)
 
    printf("Enter student name: ");
     if(fgets(student_name, sizeof(student_name), stdin) == NULL){
