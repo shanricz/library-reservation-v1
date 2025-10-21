@@ -50,7 +50,9 @@ int create_tables() {
                 "end_time TEXT NOT NULL,"
                 "reservation_id TEXT NOT NULL UNIQUE,"
                 //"email TEXT NOT NULL"
-                "created_at DATETIME DEFAULT CURRENT_TIMESTAMP"
+                "consultation_room TEXT NOT NULL,"
+                "created_at DATETIME DEFAULT CURRENT_TIMESTAMP,"
+                "UNIQUE(date, start_time, end_time, consultation_room)"
                 ");";
     char* err_msg = 0;
     int rc = sqlite3_exec(db, sql, 0, 0, &err_msg);
@@ -64,46 +66,57 @@ int create_tables() {
 }
 
 
-int check_time_conflict(const char* date, const char* start_time, const char* end_time) {
-char sql[500];
-char* err_msg = 0;
-int conflict = 0;
-
-// check for time conflicts
-char start_24[MAX_TIME_LENGTH], end_24[MAX_TIME_LENGTH];
-format_time_24hour((char*)start_time, start_24);
-format_time_24hour((char*)end_time, end_24);
-
-sprintf(sql, "SELECT COUNT(*) FROM reservations WHERE date = '%s' AND ("
-             "(start_time < '%s' AND end_time > '%s') OR "
-             "(start_time >= '%s' AND start_time < '%s') OR "
-             "(end_time > '%s' AND end_time <= '%s')"
-             ");", date, end_24, start_24, start_24, end_24, start_24, end_24);
-
-    int rc = sqlite3_exec(db, sql, callback_count_reservations, &conflict, &err_msg);
-
-    if (rc != SQLITE_OK) {
-        fprintf(stderr, "SQL error: %s\n", err_msg);
-        sqlite3_free(err_msg);
-        return 1;
-    }
-
-    return conflict > 0 ? 1 : 0;
-}
-
-int insert_reservation(const char* name, const char* student_num, const char* date, const char* start_time, const char* end_time, const char* reservation_id) {
+int check_time_conflict(const char* date, const char* start_time, const char* end_time, const char* consultation_room) {
+    char sql[600];
     char* err_msg = 0;
-    char sql[500];
+    int conflict = 0;
 
     // convert to 24-hour format
     char start_24[MAX_TIME_LENGTH], end_24[MAX_TIME_LENGTH];
     format_time_24hour((char*)start_time, start_24);
     format_time_24hour((char*)end_time, end_24);
 
-    // insert
-    sprintf(sql, "INSERT INTO reservations (student_name, student_num, date, start_time, end_time, reservation_id) "
-                 "VALUES ('%s', '%s', '%s', '%s', '%s', '%s');",
-                 name, student_num, date, start_24, end_24, reservation_id);
+    // Only check conflicts within the SAME room
+    sprintf(sql,
+        "SELECT COUNT(*) FROM reservations "
+        "WHERE date = '%s' AND consultation_room = '%s' AND ("
+        "   (start_time < '%s' AND end_time > '%s') OR "
+        "   (start_time >= '%s' AND start_time < '%s') OR "
+        "   (end_time > '%s' AND end_time <= '%s')"
+        ");",
+        date, consultation_room, end_24, start_24, start_24, end_24, start_24, end_24);
+
+    int rc = sqlite3_exec(db, sql, callback_count_reservations, &conflict, &err_msg);
+
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "SQL error: %s\n", err_msg);
+        sqlite3_free(err_msg);
+        return 1; // error
+    }
+
+    return conflict > 0 ? 1 : 0; // 1 = conflict, 0 = available
+}
+
+
+int insert_reservation(const char* name, const char* student_num, const char* date, const char* start_time, const char* end_time, const char* reservation_id, const char* consultation_room) {
+    char* err_msg = 0;
+    char sql[600];
+
+    // convert to 24-hour format
+    char start_24[MAX_TIME_LENGTH], end_24[MAX_TIME_LENGTH];
+    format_time_24hour((char*)start_time, start_24);
+    format_time_24hour((char*)end_time, end_24);
+
+    //CHECK FOR CONFLICT BEFORE INSERTING
+    if (check_time_conflict(date, start_24, end_24, consultation_room)) {
+        fprintf(stderr, "Reservation conflict detected. Room %s is already booked on %s between %s and %s.\n", consultation_room, date, start_time, end_time);
+        return 1;
+    }
+
+    //INSERT RESERVATION IF NO CONFLICT
+    sprintf(sql, "INSERT INTO reservations (student_name, student_num, date, start_time, end_time, reservation_id, consultation_room) "
+                 "VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s');",
+                 name, student_num, date, start_24, end_24, reservation_id, consultation_room);
 
     int rc = sqlite3_exec(db, sql, 0, 0, &err_msg);
 
@@ -222,10 +235,11 @@ int callback_print_reservations(void* data, int argc, char** argv, char** azColN
     (void)azColName;
     
     // Format: reservation_id | start_time | end_time | student_name
-    // Column order: id(0), student_name(1), student_num(2), date(3), start_time(4), end_time(5), reservation_id(6)
-    if (argc >= 7) {
+    // Column order: id(0), student_name(1), student_num(2), date(3), start_time(4), end_time(5), reservation_id(6), consultation_room(7), created_at(8)
+    if (argc >= 8) {
         const char* reservation_id = argv[6] ? argv[6] : "NULL";
         const char* student_name = argv[1] ? argv[1] : "NULL";
+        const char* consultation_room = argv[7] ? argv[7] : "NULL";
         const char* start_time = argv[4] ? argv[4] : "NULL";
         const char* end_time = argv[5] ? argv[5] : "NULL";
         
@@ -234,8 +248,8 @@ int callback_print_reservations(void* data, int argc, char** argv, char** azColN
         format_time_12hour((char*)start_time, start_12);
         format_time_12hour((char*)end_time, end_12);
         
-        printf("| %-20s | %-17s | %-17s | %-25s |\n", 
-               reservation_id, start_12, end_12, student_name);
+        printf("| %-20s | %-20s | %-17s | %-17s | %-25s | \n", 
+               reservation_id, consultation_room, start_12, end_12, student_name);
     }
     return 0;
 }
@@ -249,30 +263,6 @@ int callback_count_reservations(void* data, int argc, char** argv, char** azColN
     return 0;
 }
 
-/*int update_reservation(const char* reservation_id, const char* name, const char* date, const char* start_time, const char* end_time, const char* student_num) {
-    char sql[500];
-    char* err_msg = 0;
-
-    // Convert times to 24-hour format for storage
-    char start_24[MAX_TIME_LENGTH], end_24[MAX_TIME_LENGTH];
-    format_time_24hour((char*)start_time, start_24);
-    format_time_24hour((char*)end_time, end_24);
-
-    // SQL update statement
-    sprintf(sql, "UPDATE reservations SET student_name = '%s', student_num = '%s', date = '%s', start_time = '%s', end_time = '%s' "
-                 "WHERE id = '%s';",
-                 name, student_num, date, start_24, end_24, reservation_id);
-
-    int rc = sqlite3_exec(db, sql, 0, 0, &err_msg);
-
-    if (rc != SQLITE_OK) {
-        fprintf(stderr, "SQL error: %s\n", err_msg);
-        sqlite3_free(err_msg);
-        return 1;
-    }
-
-    return 0;
-}*/
 
 /* DONE: initialize_database(): Opens the SQLite database and creates tables if they don’t exist.
 DONE: close_database(): Closes the database connection.
@@ -282,7 +272,7 @@ DONE: delete_reservation(reservation_id): Removes a reservation by its ID.
 DONE: get_reservations_by_date(date): Retrieves and displays all reservations for a given date.
 DONE: search_reservations_by_name(name): Searches and displays reservations by student name.
 DONE: search_reservations_by_id(id): Searches and displays a reservation by its ID.
-TODO: get_all_reservations(): Retrieves and displays all reservations in the database.
+DONE: get_all_reservations(): Retrieves and displays all reservations in the database.
 TODO: update_reservation(reservation_id, ...): Updates details of an existing reservation.
 DONE: check_time_conflict(date, start_time, end_time): Checks if a new reservation conflicts with existing ones.
 DONE: callback_print_reservations(): Callback to print reservation details from SQL queries.

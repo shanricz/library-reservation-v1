@@ -4,13 +4,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <ctype.h>
 
 //db connection
 sqlite3 *db;
 
+void to_uppercase (char *str) {
+    for (int i = 0; str[i]; i++){
+        str[i] =toupper (str[i]);
+    }
+}
+
 int main() {
 
-    printf("---> LIBRARY CONSULTATION ROOM RESERVATION SYSTEM <---\n");
+    printf("LIBRARY CONSULTATION ROOM RESERVATION SYSTEM\n");
     printf("Initializing system...\n\n");
 
     //Initialize db
@@ -36,7 +43,9 @@ void main_menu(){
     int choice;
      do {
         clear_screen();
-        printf(">>>LIBRARY CONSULTATION ROOM RESERVATION SYSTEM<<<\n");
+        printf("LIBRARY CONSULTATION ROOM RESERVATION SYSTEM\n");
+        printf("--------------------------------------------\n");
+        printf("\n");
         printf("Main Menu:\n");
         printf("1. View Daily Schedule\n");
         printf("2. Make a Reservation\n");
@@ -101,10 +110,11 @@ void view_daily_schedule() {
 
     //Show sched
     printf("\nSchedule for %s\n", date);
-    printf("+----------------------+-------------------+-------------------+---------------------------+\n");
-    printf("| %-20s | %-17s | %-17s | %-25s |\n", "ID", "Start Time", "End Time", "Student Name");
-    printf("+----------------------+-------------------+-------------------+---------------------------+\n");
-
+    printf("+----------------------+------------+-----------------+------------+------------+---------------------------+\n");
+    printf("| %-20s | %-10s | %-15s | %-10s | %-10s | %-25s |\n",
+        "Reservation ID", "Date", "Room", "Start Time", "End Time", "Student Name");
+    printf("+----------------------+------------+-----------------+------------+------------+---------------------------+\n");
+    
         // Get reservations for the date
     int result = get_reservations_by_date(date);
 
@@ -112,7 +122,7 @@ void view_daily_schedule() {
         printf("Error retrieving schedule data.\n");
     }
 
-    printf("+----------------------+-------------------+-------------------+---------------------------+\n");
+    printf("+----------------------+------------+-----------------+------------+------------+---------------------------+\n");
     pause_screen();
 }
 
@@ -129,12 +139,27 @@ void make_reservation(){
     char start_time[MAX_TIME_LENGTH];
     char end_time[MAX_TIME_LENGTH];
     char reservation_id[MAX_RESERVATION_ID_LENGTH];
+    char consultation_room[MAX_ROOM_LENGTH];
 
     clear_screen();
     printf("MAKE A RESERVATION\n");
     printf("------------------\n");
-
+    printf("\n");
    
+    printf("Available Consultation Rooms:\n");
+    for (int i = 0; i < NUM_ROOMS; i++) {
+        printf("%d. %s\n", i + 1, CONSULTATION_ROOMS[i]);
+    }
+    
+    int room_choice;
+    printf("Select consultation room: ");
+    if(scanf("%d", &room_choice) != 1 || room_choice < 1 || room_choice > NUM_ROOMS){
+        printf("Error reading consultation room input.\n");
+        pause_screen();
+        return;
+    }
+    strcpy(consultation_room, CONSULTATION_ROOMS[room_choice - 1]);
+ 
     clear_input_buffer(); // Clear input buffer (THIS ALLOWS USER TO HAVE SPACES IN THEIR NAME)
 
    printf("Enter student name: ");
@@ -209,9 +234,9 @@ void make_reservation(){
         pause_screen();
         return;
     }
-    //automatically set the year
-    // printf("Enter year: ");
-    // scanf("%d", &year);
+    /*automatically set the year
+    printf("Enter year: ");
+    scanf("%d", &year);*/
 
     time_t now = time(NULL); // Grabs current time and stores it in variable now
     struct tm *t = localtime(&now);
@@ -230,6 +255,8 @@ void make_reservation(){
         pause_screen();
         return;
     }
+ 
+    to_uppercase(start_time);
 
     //end time
     printf("Enter end time (HH:MM AM/PM): ");
@@ -238,6 +265,8 @@ void make_reservation(){
         pause_screen();
         return;
     }
+
+    to_uppercase(end_time);
 
     //validate date
     if (!validate_date(date)) {
@@ -260,7 +289,7 @@ void make_reservation(){
     }
 
     //check for time conflicts
-    if (check_time_conflict(date, start_time, end_time)){
+    if (check_time_conflict(date, start_time, end_time, consultation_room)) {
         printf("Time slot is reserved by other student. Please choose a different time.");
         pause_screen();
         return;
@@ -272,12 +301,13 @@ void make_reservation(){
 
      //confirm details
     printf("\nPlease confirm your reservation details:\n");
-    printf("+------------------+------------+-------------------+-------------------+---------------------------+\n");
-    printf("+------------------+------------+-------------------+-------------------+---------------------------+\n");
-    printf("| %-20s | %-10s | %-17s | %-17s | %-25s |\n", "Reservation ID", "Date", "Start Time", "End Time", "Student Name");
-    printf("+------------------+------------+-------------------+-------------------+---------------------------+\n");
-    printf("| %-20s | %-10s | %-17s | %-17s | %-25s |\n", reservation_id, date, start_time, end_time, student_name);
-    printf("+------------------+------------+-------------------+-------------------+---------------------------+\n");
+    printf("+----------------------+------------+-----------------+------------+------------+---------------------------+\n");
+    printf("| %-20s | %-10s | %-15s | %-10s | %-10s | %-25s |\n",
+        "Reservation ID", "Date", "Room", "Start Time", "End Time", "Student Name");
+    printf("+----------------------+------------+-----------------+------------+------------+---------------------------+\n");
+    printf("| %-20s | %-10s | %-15s | %-10s | %-10s | %-25s |\n",
+        reservation_id, date, consultation_room, start_time, end_time, student_name);
+    printf("+----------------------+------------+-----------------+------------+------------+---------------------------+\n");
     printf("Confirm reservation? (Y/N): ");
     char confirm;
     if (scanf(" %c", &confirm) != 1 || (confirm != 'Y' && confirm != 'y')) {
@@ -287,7 +317,7 @@ void make_reservation(){
     }
     
     //create reservation
-    int result = insert_reservation(student_name, student_num, date, start_time, end_time, reservation_id);
+    int result = insert_reservation(student_name, student_num, date, start_time, end_time, reservation_id, consultation_room);
     if (result == 0) {
         printf("Reservation created successfully.\n");
     } else {
@@ -357,6 +387,11 @@ void cancel_reservation(){
     printf("1. Reservation ID\n");
     printf("2. Return to Main Menu\n");
     printf("Enter your choice: ");
+    if (scanf("%d", &choice) != 1) {
+        printf("Invalid input.\n");
+        pause_screen();
+        return;
+    }
 }
 
 /*
@@ -395,11 +430,11 @@ void search_reservations(){
             search_term[strcspn(search_term, "\n")] = 0; // Remove newline
 
             printf("\nSearch results for '%s':\n", search_term);
-            printf("+----------------------+-------------------+-------------------+---------------------------+\n");
-            printf("| %-20s | %-17s | %-17s | %-25s |\n", "ID", "Start Time", "End Time", "Student Name");
-            printf("+----------------------+-------------------+-------------------+---------------------------+\n");
+            printf("+----------------------+------------+-----------------+------------+------------+---------------------------+\n");
+            printf("| %-20s | %-10s | %-15s | %-10s | %-10s | %-25s |\n",
+                "Reservation ID", "Date", "Room", "Start Time", "End Time", "Student Name");
             get_reservations_by_name(search_term);
-            printf("+----------------------+-------------------+-------------------+---------------------------+\n");
+            printf("+----------------------+------------+-----------------+------------+------------+---------------------------+\n");
             break;
 
         case 2:
@@ -412,7 +447,7 @@ void search_reservations(){
 
             printf("\nSearch results for ID '%s':\n", search_id);
             printf("+----------------------+-------------------+-------------------+---------------------------+\n");
-            printf("| %-20s | %-17s | %-17s | %-25s |\n", "ID", "Start Time", "End Time", "Student Name");
+            printf("| %-20s | %-20s |%-17s | %-17s | %-25s |\n", "ID", "Room", "Start Time", "End Time", "Student Name");
             printf("+----------------------+-------------------+-------------------+---------------------------+\n");
             get_reservations_by_id(search_id);
             printf("+----------------------+-------------------+-------------------+---------------------------+\n");

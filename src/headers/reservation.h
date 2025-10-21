@@ -13,6 +13,12 @@
 #define MAX_TIME_LENGTH 10
 #define MAX_RESERVATION_ID_LENGTH 50
 #define MAX_STUD_ID_LENGTH 11
+#define MAX_ROOM_LENGTH 50
+#define NUM_ROOMS 4
+
+static const char* CONSULTATION_ROOMS[NUM_ROOMS] = {
+     "Room A", "Room B", "Room C", "Room D"
+};
 
 //Reservation Struct
 typedef struct {
@@ -23,7 +29,7 @@ typedef struct {
     char start_time[MAX_TIME_LENGTH];
     char end_time[MAX_TIME_LENGTH];
     char reservation_id[MAX_RESERVATION_ID_LENGTH];
-    char email[MAX_EMAIL_LENGTH];
+    char consultation_room[MAX_ROOM_LENGTH];
 } Reservation;
 
 //Function Declarations

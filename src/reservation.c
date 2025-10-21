@@ -7,6 +7,16 @@
 
 
 int validate_date(const char* date) {
+
+    // Check if date is in the past
+    time_t t = time(NULL); // Grabs current time and stores it in variable t
+    struct tm *today = localtime(&t); // Converts t to localtime as structure broken down to year month day
+    
+    // Extract the current year, month, and day numbers from today
+    int current_year = today->tm_year + 1900; // Counts years since 1900, e.g 1900 + 125 = 2025
+    int current_month = today->tm_mon + 1; // Months start at 0 (= January), and +1 is added so 1 = January
+    int current_day = today->tm_mday; // Gives the current day of the month (1-31)
+
     // Expected format: MM/DD/YYYY
     if (strlen(date) != 10) {
         return 0; // Invalid length
@@ -34,7 +44,7 @@ int validate_date(const char* date) {
     // Basic validation
     if (month < 1 || month > 12) return 0;
     if (day < 1 || day > 31) return 0;
-    if (year < 2024 || year > 2030) return 0; // Reasonable year range
+    if (year < current_year || year > current_year + 5) return 0; // Reasonable year range
     
 
     // Check days in month
@@ -47,20 +57,12 @@ int validate_date(const char* date) {
     
     if (day > days_in_month[month - 1]) return 0; // Invalid day for month
 
-    // Check if date is in the past
-    time_t t = time(NULL); // Grabs current time and stores it in variable t
-    struct tm *today = localtime(&t); // Converts t to localtime as structure broken down to year month day
     
-    // Extract the current year, month, and day numbers from today
-    int current_year = today->tm_year + 1900; // Counts years since 1900, e.g 1900 + 125 = 2025
-    int current_month = today->tm_mon + 1; // Months start at 0 (= January), and +1 is added so 1 = January
-    int current_day = today->tm_mday; // Gives the current day of the month (1-31)
-
     // Check if user input date is earlier than today
     if (year < current_year || // If year is smaller, it is in the past
        (year == current_year && month < current_month) || // If month is smaller, it is in the past
        (year == current_year && month == current_month && day < current_day)) { // If both year and month are smaller, it is in the past
-        printf("Error: A past date is invalid.\n"); // Invalid date because any of the three conditions are the past
+       //printf("Error: A past date is invalid.\n"); // Invalid date because any of the three conditions are the past
         return 0; // Mark the date as invalid
     }
 
@@ -156,6 +158,13 @@ void format_time_12hour(char* time_24, char* time_12) {
 
 void format_time_24hour(char* time_12, char* time_24) {
     // Convert 12-hour format (HH:MM AM/PM) to 24-hour format (HH:MM)
+
+    if (!validate_time(time_12)) {
+    time_24[0] = '\0'; // Invalid input
+    return;
+}
+
+
     int hour, minute;
     char period[3];
     sscanf(time_12, "%d:%d %2s", &hour, &minute, period);
@@ -181,11 +190,11 @@ int compare_times(const char* time1, const char* time2) {
     return minute1 - minute2;
 }
 /* validation and time-related logic.
-TODO: validate_date(date): Checks if the date is in the correct format (MM/DD/YYYY).
-TODO: validate_time(time): Checks if the time is in the correct format (HH:MM AM/PM).
-TODO: validate_time_range(start_time, end_time): Ensures the end time is after the start time.
-TODO: check_time_conflict(date, start_time, end_time): Checks if the requested time slot overlaps with existing reservations.
-TODO: format_time_24hour(time): Converts time to 24-hour format (if needed).
-TODO: format_time_12hour(time): Converts time to 12-hour format (if needed).
-TODO: compare_times(start, end): Compares two time strings.
+DONE: validate_date(date): Checks if the date is in the correct format (MM/DD/YYYY).
+DONE: validate_time(time): Checks if the time is in the correct format (HH:MM AM/PM).
+DONE: validate_time_range(start_time, end_time): Ensures the end time is after the start time.
+DONE: check_time_conflict(date, start_time, end_time): Checks if the requested time slot overlaps with existing reservations.
+DONE: format_time_24hour(time): Converts time to 24-hour format (if needed).
+DONE: format_time_12hour(time): Converts time to 12-hour format (if needed).
+DONE: compare_times(start, end): Compares two time strings.
 */
