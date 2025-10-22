@@ -50,9 +50,9 @@ void main_menu(){
         printf("1. View Daily Schedule\n");
         printf("2. Make a Reservation\n");
         printf("3. Cancel a Reservation\n");
-        //TODO: LAGAY KAYO DITO BAGO, EDIT RESERVATION
-        printf("4. Search Reservations\n");
-        printf("5. Exit\n");
+        printf("4. Edit reservation\n");
+        printf("5. Search Reservations\n");
+        printf("6. Exit\n");
         printf("Enter your choice: ");
         if(scanf("%d", &choice) != 1){
             printf("Invalid input. Please enter a number between 1 and 5.\n");
@@ -71,9 +71,14 @@ void main_menu(){
                 cancel_reservation();
                 break;
             case 4:
-                search_reservations();
+                //edit_reservation();
+                printf("Edit reservation feature\n");
+                pause_screen();
                 break;
             case 5:
+                search_reservations();
+                break;
+            case 6:
                 printf("Exiting the program...\n");
                 break;
             default:
@@ -108,23 +113,24 @@ void view_daily_schedule() {
         return;
     }
 
-    //Show sched
+     //Show sched
+     //Show sched
     printf("\nSchedule for %s\n", date);
     printf("+----------------------+------------+-----------------+------------+------------+---------------------------+\n");
     printf("| %-20s | %-10s | %-15s | %-10s | %-10s | %-25s |\n",
         "Reservation ID", "Date", "Room", "Start Time", "End Time", "Student Name");
     printf("+----------------------+------------+-----------------+------------+------------+---------------------------+\n");
-    
-        // Get reservations for the date
+
+    // Get reservations for the date
     int result = get_reservations_by_date(date);
 
     if (result != 0) {
-        printf("Error retrieving schedule data.\n");
+        printf("| %-112s |\n", "Error retrieving schedule data.");
     }
 
     printf("+----------------------+------------+-----------------+------------+------------+---------------------------+\n");
     pause_screen();
-}
+    }
 
 /*
 TODO: MAKE SURE NA MAY VALIDATIONS
@@ -176,8 +182,8 @@ void make_reservation(){
     //LACKS VALIDATION
     //get stud num [limited character]
     printf("Enter student number: ");
-    if(scanf("%s", student_num) != 1){
-        printf("Error: Wrong student number format.\n");
+    if (scanf("%s", student_num) != 1 || strlen(student_num) != 10) {
+        printf("[Error] student number input incorrect.\n");
         pause_screen();
         return;
     }
@@ -333,8 +339,6 @@ void make_reservation(){
 void generate_reservation_id(char* out_id, size_t out_size, const char* reservation_date) {
     // Simple format: TODAY_DATE-RESERVATION_DATE-TIMESTAMP
     // Example: 101325-120125-123456 (MMDDYY-MMDDYY-HHMMSS)
- // Simple format: TODAY_DATE-RESERVATION_DATE-TIMESTAMP
-    // Example: 101325-120125-123456 (MMDDYY-MMDDYY-HHMMSS)
     
     if (out_size < 20) {
         if (out_size > 0) out_id[0] = '\0';
@@ -353,7 +357,7 @@ void generate_reservation_id(char* out_id, size_t out_size, const char* reservat
     char res_date_str[8]; // Increased size to prevent truncation
     if (strlen(reservation_date) == 10 && reservation_date[2] == '/' && reservation_date[5] == '/') {
         int month, day, year;
-        if (sscanf(reservation_date, "%2d/%2d/%4d", &month, &day, &year) == 3) {
+        if (sscanf(reservation_date, "%2d/%2d/%4d", &month, &day, &year) == 3)   {
             snprintf(res_date_str, sizeof(res_date_str), "%02d%02d%02d", 
                      month, day, year % 100);
         } else {
@@ -433,6 +437,7 @@ void search_reservations(){
             printf("+----------------------+------------+-----------------+------------+------------+---------------------------+\n");
             printf("| %-20s | %-10s | %-15s | %-10s | %-10s | %-25s |\n",
                 "Reservation ID", "Date", "Room", "Start Time", "End Time", "Student Name");
+            printf("+----------------------+------------+-----------------+------------+------------+---------------------------+\n");
             get_reservations_by_name(search_term);
             printf("+----------------------+------------+-----------------+------------+------------+---------------------------+\n");
             break;
@@ -449,6 +454,7 @@ void search_reservations(){
             printf("+----------------------+-------------------+-------------------+---------------------------+\n");
             printf("| %-20s | %-20s |%-17s | %-17s | %-25s |\n", "ID", "Room", "Start Time", "End Time", "Student Name");
             printf("+----------------------+-------------------+-------------------+---------------------------+\n");
+            printf("+----------------------+------------+-----------------+------------+------------+---------------------------+\n");
             get_reservations_by_id(search_id);
             printf("+----------------------+-------------------+-------------------+---------------------------+\n");
             break;

@@ -238,6 +238,7 @@ int callback_print_reservations(void* data, int argc, char** argv, char** azColN
     // Column order: id(0), student_name(1), student_num(2), date(3), start_time(4), end_time(5), reservation_id(6), consultation_room(7), created_at(8)
     if (argc >= 8) {
         const char* reservation_id = argv[6] ? argv[6] : "NULL";
+        const char* date = argv[3] ? argv[3] : "NULL";
         const char* student_name = argv[1] ? argv[1] : "NULL";
         const char* consultation_room = argv[7] ? argv[7] : "NULL";
         const char* start_time = argv[4] ? argv[4] : "NULL";
@@ -248,8 +249,9 @@ int callback_print_reservations(void* data, int argc, char** argv, char** azColN
         format_time_12hour((char*)start_time, start_12);
         format_time_12hour((char*)end_time, end_12);
         
-        printf("| %-20s | %-20s | %-17s | %-17s | %-25s | \n", 
-               reservation_id, consultation_room, start_12, end_12, student_name);
+        // FIXED: Removed extra pipe and matched column widths
+        printf("| %-20s | %-10s | %-15s | %-10s | %-10s | %-25s |\n", 
+               reservation_id, date, consultation_room, start_12, end_12, student_name);
     }
     return 0;
 }
