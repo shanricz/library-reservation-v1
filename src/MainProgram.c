@@ -55,7 +55,9 @@ void main_menu(){
         printf("6. Exit\n");
         printf("Enter your choice: ");
         if(scanf("%d", &choice) != 1){
-            printf("Invalid input. Please enter a number between 1 and 5.\n");
+
+            printf("Invalid input. Please enter a number between 1 and 6.\n");
+            clear_input_buffer();
             pause_screen();
             continue;
         }
@@ -85,7 +87,7 @@ void main_menu(){
                 printf("Invalid choice. Please try again.\n");
                 pause_screen();
         }
-     } while (choice != 5);
+     } while (choice != 6);
 }
 
 /*TODO: MAKE SURE NA ON POINT VALIDATIONS NATIN, DI PWEDE MAG ENTER NG INVALID DATES/TIMES OR NG SPECIAL CHARACTERS NA DI PWEDE
@@ -94,26 +96,33 @@ TODO: YUNG AUTOMATIC MAG AADD NG SLASH PARA DI NA HASSLE SA USER
 */
 void view_daily_schedule() {
     char date[MAX_DATE_LENGTH];
+    int valid_input = 0;
 
-    clear_screen();
-    printf("VIEW DAILY SCHEDULE\n");
-    printf("-------------------\n");
-    printf("Enter date (MM/DD/YYYY): ");
+    do {
+        clear_screen();
+        printf("VIEW DAILY SCHEDULE\n");
+        printf("-------------------\n");
+        printf("Enter date (MM/DD/YYYY): ");
 
-    if(scanf("%s", date) != 1){
-        printf("Error reading date input.\n");
-        pause_screen();
-        return;
-    };
+        if(scanf("%s", date) != 1){
+            printf("Error reading date input.\n");
+            clear_input_buffer();
+            pause_screen();
+            continue;  // Ask again
+        }
+        clear_input_buffer();  // Clear buffer after successful scanf
 
-    // Validate date
-    if (!validate_date(date)) {
-        printf("Invalid date format.\n");
-        pause_screen();
-        return;
-    }
+        // Validate date
+        if (!validate_date_for_viewing(date)) {
+            printf("Invalid date format. Please use MM/DD/YYYY.\n");
+            pause_screen();
+            continue;  // Ask again
+        }
 
-     //Show sched
+        valid_input = 1;  // Input is valid, exit loop
+
+    } while (!valid_input);
+
      //Show sched
     printf("\nSchedule for %s\n", date);
     printf("+----------------------+------------+-----------------+------------+------------+---------------------------+\n");
@@ -149,157 +158,172 @@ void make_reservation(){
 
     clear_screen();
     printf("MAKE A RESERVATION\n");
-    printf("------------------\n");
-    printf("\n");
+    printf("------------------\n\n");
    
-    printf("Available Consultation Rooms:\n");
-    for (int i = 0; i < NUM_ROOMS; i++) {
-        printf("%d. %s\n", i + 1, CONSULTATION_ROOMS[i]);
-    }
-    
+    // Step 1: Select consultation room (with validation loop)
     int room_choice;
-    printf("Select consultation room: ");
-    if(scanf("%d", &room_choice) != 1 || room_choice < 1 || room_choice > NUM_ROOMS){
-        printf("Error reading consultation room input.\n");
-        pause_screen();
-        return;
-    }
-    strcpy(consultation_room, CONSULTATION_ROOMS[room_choice - 1]);
- 
-    clear_input_buffer(); // Clear input buffer (THIS ALLOWS USER TO HAVE SPACES IN THEIR NAME)
+    int valid = 0;
+    do {
+        printf("Available Consultation Rooms:\n");
+        for (int i = 0; i < NUM_ROOMS; i++) {
+            printf("%d. %s\n", i + 1, CONSULTATION_ROOMS[i]);
+        }
+        printf("Select consultation room: ");
+        
+        if(scanf("%d", &room_choice) != 1 || room_choice < 1 || room_choice > NUM_ROOMS){
+            clear_input_buffer();
+            printf("Invalid choice. Please try again.\n\n");
+            continue;
+        }
+        clear_input_buffer();
+        strcpy(consultation_room, CONSULTATION_ROOMS[room_choice - 1]);
+        valid = 1;
+    } while (!valid);
 
-   printf("Enter student name: ");
-    if(fgets(student_name, sizeof(student_name), stdin) == NULL){
-        printf("Error reading input.\n");
-        pause_screen();
-        return;
-    }
+    // Step 2: Get student name (with validation loop)
+    valid = 0;
+    do {
+        printf("\nEnter student name: ");
+        if(fgets(student_name, sizeof(student_name), stdin) == NULL){
+            printf("Error reading input. Please try again.\n");
+            continue;
+        }
+        student_name[strcspn(student_name, "\n")] = 0;
+        
+        if (strlen(student_name) == 0) {
+            printf("Name cannot be empty. Please try again.\n");
+            continue;
+        }
+        valid = 1;
+    } while (!valid);
 
-    // Remove newline character
-    student_name[strcspn(student_name, "\n")] = 0;
+    // Step 3: Get student number (with validation loop)
+    valid = 0;
+    do {
+        printf("Enter student number (10 digits): ");
+        if (scanf("%s", student_num) != 1) {
+            clear_input_buffer();
+            printf("Error reading input. Please try again.\n");
+            continue;
+        }
+        clear_input_buffer();
+        
+        if (strlen(student_num) != 10) {
+            printf("Student number must be exactly 10 digits. Please try again.\n");
+            continue;
+        }
+        valid = 1;
+    } while (!valid);
 
-
-    //LACKS VALIDATION
-    //get stud num [limited character]
-    printf("Enter student number: ");
-    if (scanf("%s", student_num) != 1 || strlen(student_num) != 10) {
-        printf("[Error] student number input incorrect.\n");
-        pause_screen();
-        return;
-    }
-
-    //get date
-    // printf("Enter desired date [MM/DD/YYYY]: ");
-    // if(scanf("%s", date) != 1){
-    //     printf("Error: Wrong date format.\n");
-    //     pause_screen();
-    //     return;
-    // }
-
+    // Step 4: Get month (with validation loop)
     int month, day, year, mday;
-    printf("Select month:\n");
-    printf("1. January\n");
-    printf("2. February\n");
-    printf("3. March\n");
-    printf("4. April\n");
-    printf("5. May\n");
-    printf("6. June\n");
-    printf("7. July\n");
-    printf("8. August\n");
-    printf("9. September\n");
-    printf("10. October\n");
-    printf("11. November\n");
-    printf("12. December\n");
-    printf("Enter month (1-12): ");
-    scanf("%d", &month);
+    valid = 0;
+    do {
+        printf("\nSelect month:\n");
+        printf("1. January    2. February   3. March      4. April\n");
+        printf("5. May        6. June       7. July       8. August\n");
+        printf("9. September  10. October   11. November  12. December\n");
+        printf("Enter month (1-12): ");
+        
+        if (scanf("%d", &month) != 1 || month < 1 || month > 12) {
+            clear_input_buffer();
+            printf("Invalid month. Please try again.\n");
+            continue;
+        }
+        clear_input_buffer();
+        
+        // Set max days for the month
+        switch (month) {
+            case 1: case 3: case 5: case 7: case 8: case 10: case 12: 
+                mday = 31; break;
+            case 4: case 6: case 9: case 11: 
+                mday = 30; break;
+            case 2: 
+                mday = 29; break;
+        }
+        valid = 1;
+    } while (!valid);
 
-    //tells user which month they picked
-    switch (month) {
-        case 1:  printf("You selected January.\n"); mday = 31; break;
-        case 2:  printf("You selected February.\n"); mday = 29; break;
-        case 3:  printf("You selected March.\n"); mday = 31; break;
-        case 4:  printf("You selected April.\n"); mday = 30; break;
-        case 5:  printf("You selected May.\n"); mday = 31; break;
-        case 6:  printf("You selected June.\t"); mday = 30; break;
-        case 7:  printf("You selected July.\n"); mday = 31; break;
-        case 8:  printf("You selected August.\n"); mday = 31; break;
-        case 9:  printf("You selected September.\n"); mday = 30; break;
-        case 10: printf("You selected October.\n"); mday = 31; break;
-        case 11: printf("You selected November.\n"); mday = 30; break;
-        case 12: printf("You selected December.\n"); mday = 31; break;
-        default:
-            printf("Error: Invalid month.");
-            pause_screen();
-            return;
-    }
-    //if day exceeds 31, show an error
-    printf("Enter day: ");
-    scanf("%d", &day);
-    if(day < 1 || day > mday) {
-        printf("Error: Invalid day for chosen month.");
-        pause_screen();
-        return;
-    }
-    /*automatically set the year
-    printf("Enter year: ");
-    scanf("%d", &year);*/
+    // Step 5: Get day (with validation loop)
+    valid = 0;
+    do {
+        printf("Enter day (1-%d): ", mday);
+        if (scanf("%d", &day) != 1) {
+            clear_input_buffer();
+            printf("Invalid input. Please try again.\n");
+            continue;
+        }
+        clear_input_buffer();
+        
+        if(day < 1 || day > mday) {
+            printf("Invalid day for chosen month. Please try again.\n");
+            continue;
+        }
+        valid = 1;
+    } while (!valid);
 
-    time_t now = time(NULL); // Grabs current time and stores it in variable now
+    // Auto-set year
+    time_t now = time(NULL);
     struct tm *t = localtime(&now);
     year = t->tm_year + 1900;
-
     printf("Year has been automatically set to %d.\n", year);
 
-    // turn into mm/dd/yyyy format
+    // Format date
     snprintf(date, sizeof(date), "%02d/%02d/%04d", month, day, year);
-
-    //time start
-    printf("Do not include a space between HH:MM and AM/PM (12:00PM)\n");
-    printf("Enter start time (HH:MM AM/PM): ");
-    if (scanf("%s", start_time) != 1){
-        printf("Error reading start time.\n");
-        pause_screen();
-        return;
-    }
- 
-    to_uppercase(start_time);
-
-    //end time
-    printf("Enter end time (HH:MM AM/PM): ");
-    if (scanf("%s", end_time) != 1){
-        printf("Error reading end time.\n");
-        pause_screen();
-        return;
-    }
-
-    to_uppercase(end_time);
-
-    //validate date
     if (!validate_date(date)) {
-        printf("Invalid date format.\n");
         pause_screen();
         return;
     }
 
-    //validate time
-    if (!validate_time(start_time) || !validate_time(end_time)){
-        printf("Invalid time format.");
-        pause_screen();
-        return;
-    }
+    // Step 6: Get start time (with validation loop)
+    valid = 0;
+    do {
+        printf("\nEnter start time (HH:MM AM/PM, e.g., 12:00PM): ");
+        if (scanf("%s", start_time) != 1){
+            clear_input_buffer();
+            printf("Error reading start time. Please try again.\n");
+            continue;
+        }
+        clear_input_buffer();
+        to_uppercase(start_time);
 
-    if (!validate_time_range(start_time, end_time)){
-        printf("End time must be after the start time.\n");
-        pause_screen();
-        return;
-    }
+        if (!validate_time(start_time)){
+            printf("Invalid time format. Please try again.\n");
+            continue;
+        }
+        valid = 1;
+    } while (!valid);
 
-    //check for time conflicts
+    // Step 7: Get end time (with validation loop)
+    valid = 0;
+    do {
+        printf("Enter end time (HH:MM AM/PM, e.g., 01:00PM): ");
+        if (scanf("%s", end_time) != 1){
+            clear_input_buffer();
+            printf("Error reading end time. Please try again.\n");
+            continue;
+        }
+        clear_input_buffer();
+        to_uppercase(end_time);
+
+        if (!validate_time(end_time)){
+            printf("Invalid time format. Please try again.\n");
+            continue;
+        }
+
+        if (!validate_time_range(start_time, end_time)){
+            printf("End time must be after start time. Please try again.\n");
+            continue;
+        }
+        valid = 1;
+    } while (!valid);
+
+    // Step 8: Check for conflicts
     if (check_time_conflict(date, start_time, end_time, consultation_room)) {
-        printf("Time slot is reserved by other student. Please choose a different time.");
+        printf("\nTime slot is already reserved. Please try a different time.\n");
         pause_screen();
-        return;
-    }
+        return; // Or you could loop back to time selection
+    }  
 
      // generate reservation id (DATE TODAY, RESERVATION DATE, NUMBER OF RESERVATION TODAY)
     generate_reservation_id(reservation_id, sizeof(reservation_id), date);
@@ -317,6 +341,7 @@ void make_reservation(){
     printf("Confirm reservation? (Y/N): ");
     char confirm;
     if (scanf(" %c", &confirm) != 1 || (confirm != 'Y' && confirm != 'y')) {
+        clear_input_buffer();
         printf("Reservation cancelled by user.\n");
         pause_screen();
         return;
@@ -325,7 +350,9 @@ void make_reservation(){
     //create reservation
     int result = insert_reservation(student_name, student_num, date, start_time, end_time, reservation_id, consultation_room);
     if (result == 0) {
+        clear_input_buffer();
         printf("Reservation created successfully.\n");
+        pause_screen();
     } else {
         printf("Failed to create reservation.\n");
     }
@@ -381,9 +408,9 @@ TODO: ETO WALA PA TALAGA, KAYO NA BAHALA IF PAANO NYO IIMPLEMENT; CHECK OTHER C 
 void cancel_reservation(){
     //cancel logic here
     int choice;
-    int reservation_id;
-    char search_name[MAX_NAME_LENGTH];
+    char reservation_id[30];  // INCREASED from 20 to 30
 
+    do {
     clear_screen();
     printf("CANCEL A RESERVATION\n");
     printf("--------------------\n");
@@ -396,6 +423,65 @@ void cancel_reservation(){
         pause_screen();
         return;
     }
+    
+    // Clear input buffer after scanf
+    while(getchar() != '\n');
+
+    switch (choice) {
+            case 1:
+                printf("Enter Reservation ID to cancel: ");
+                if (scanf("%29s", reservation_id) != 1) {  // CHANGED from %19s to %29s
+                    printf("Invalid Reservation ID input.\n");
+                    pause_screen();
+                    return;
+                }
+                
+                // Clear input buffer
+                while(getchar() != '\n');
+                
+                // First, verify the reservation exists by displaying it
+                printf("\nSearching for reservation...\n");
+                printf("| %-20s | %-10s | %-15s | %-10s | %-10s | %-25s |\n", 
+                       "Reservation ID", "Date", "Room", "Start", "End", "Student Name");
+                printf("|----------------------|------------|-----------------|------------|------------|---------------------------|\n");
+                
+                if (get_reservations_by_id(reservation_id) != 0) {
+                    printf("Error searching for reservation.\n");
+                    pause_screen();
+                    break;
+                }
+                
+                // Ask for confirmation
+                printf("\nAre you sure you want to cancel this reservation? (Y/N): ");
+                char confirm;
+                scanf(" %c", &confirm);
+                while(getchar() != '\n');
+                
+                if (confirm == 'Y' || confirm == 'y') {
+                    int result = delete_reservation(reservation_id);
+                    if (result == 0) {
+                        printf("\nReservation '%s' successfully cancelled.\n", reservation_id);
+                        pause_screen();
+                        return; // Exit after successful cancellation
+                    } else if (result == 1) {
+                        printf("\nNo reservation found with ID '%s'.\n", reservation_id);
+                    } else {
+                        printf("\nFailed to cancel reservation due to database error.\n");
+                    }
+                } else {
+                    printf("\nCancellation aborted.\n");
+                }
+                
+                pause_screen();
+                break;
+            case 2:
+                return;
+                break;
+            default:
+                printf("Invalid choice. Please try again.\n");
+                pause_screen();
+        }
+    } while (choice != 2);
 }
 
 /*
@@ -482,7 +568,6 @@ void clear_screen(){
 void pause_screen(){
     //pause logic here
     printf("\nPress enter to continue...");
-    getchar();
     getchar(); //clears newline from previous input
 }
 

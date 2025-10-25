@@ -40,5 +40,6 @@ int is_time_conflict(const char* start1, const char* end1, const char* start2, c
 void format_time_12hour(char* time_24, char* time_12);
 void format_time_24hour(char* time_12, char* time_24);
 int compare_times(const char* time1, const char* time2);
+int validate_date_for_viewing(const char* date);
 
  #endif // RESERVATION_H

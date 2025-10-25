@@ -62,9 +62,64 @@ int validate_date(const char* date) {
     if (year < current_year || // If year is smaller, it is in the past
        (year == current_year && month < current_month) || // If month is smaller, it is in the past
        (year == current_year && month == current_month && day < current_day)) { // If both year and month are smaller, it is in the past
-       //printf("Error: A past date is invalid.\n"); // Invalid date because any of the three conditions are the past
+       printf("Error: A past date is invalid.\n"); // Invalid date because any of the three conditions are the past
         return 0; // Mark the date as invalid
     }
+
+    return 1; // Valid date
+}
+
+int validate_date_for_viewing(const char* date){
+
+    // Check if date is in the past
+    time_t t = time(NULL); // Grabs current time and stores it in variable t
+    struct tm *today = localtime(&t); // Converts t to localtime as structure broken down to year month day
+    
+    // Extract the current year, month, and day numbers from today
+    int current_year = today->tm_year + 1900; // Counts years since 1900, e.g 1900 + 125 = 2025
+    int current_month = today->tm_mon + 1; // Months start at 0 (= January), and +1 is added so 1 = January
+    int current_day = today->tm_mday; // Gives the current day of the month (1-31)
+
+
+      // Expected format: MM/DD/YYYY
+    if (strlen(date) != 10) {
+        return 0; // Invalid length
+    }
+    
+    // Check format MM/DD/YYYY
+    if (date[2] != '/' || date[5] != '/') {
+        return 0; // Invalid separators
+    }
+    
+    // Check if all other characters are digits
+    for (int i = 0; i < 10; i++) {
+        if (i == 2 || i == 5) continue; // Skip separators
+        if (date[i] < '0' || date[i] > '9') {
+            return 0; // Non-digit character
+        }
+    }
+    
+    // Extract month, day, year
+    int month = (date[0] - '0') * 10 + (date[1] - '0');
+    int day = (date[3] - '0') * 10 + (date[4] - '0');
+    int year = (date[6] - '0') * 1000 + (date[7] - '0') * 100 + 
+               (date[8] - '0') * 10 + (date[9] - '0');
+    
+    // Basic validation
+    if (month < 1 || month > 12) return 0;
+    if (day < 1 || day > 31) return 0;
+    if (year < current_year || year > current_year + 5) return 0; // Reasonable year range
+    
+
+    // Check days in month
+    int days_in_month[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+    
+    // Leap year check
+    if (month == 2 && ((year % 4 == 0 && year % 100 != 0) || (year % 400 == 0))) {
+        days_in_month[1] = 29;
+    }
+    
+    if (day > days_in_month[month - 1]) return 0; // Invalid day for month
 
     return 1; // Valid date
 }

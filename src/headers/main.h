@@ -29,6 +29,7 @@ void generate_reservation_id(char* out_id, size_t out_size, const char* reservat
 
 // Missing declarations
 int validate_date(const char* date);
+int validate_date_for_viewing(const char* date);
 int validate_time(const char* time);
 int validate_time_range(const char* start_time, const char* end_time);
 void format_time_24hour(char* time_12, char* time_24);

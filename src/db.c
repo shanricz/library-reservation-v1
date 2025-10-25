@@ -129,22 +129,32 @@ int insert_reservation(const char* name, const char* student_num, const char* da
     return 0;
 }
 
-int delete_reservation(const char* reservation_id) {
-    char sql[200];
-    char* err_msg = 0;
+    int delete_reservation(const char* reservation_id) {
+        char sql[200];
+        char* err_msg = 0;
 
-    sprintf(sql, "DELETE FROM reservations WHERE reservation_id = '%s';", reservation_id);
+        // DEBUG: Print the exact query being executed
+        sprintf(sql, "DELETE FROM reservations WHERE reservation_id = '%s';", reservation_id);
+        printf("DEBUG - Executing SQL: %s\n", sql);  // ADD THIS LINE
+        printf("DEBUG - Reservation ID length: %zu\n", strlen(reservation_id));  // ADD THIS LINE
 
-    int rc = sqlite3_exec(db, sql, 0, 0, &err_msg);
+        int rc = sqlite3_exec(db, sql, 0, 0, &err_msg);
 
-    if (rc != SQLITE_OK) {
-        fprintf(stderr, "SQL error: %s\n", err_msg);
-        sqlite3_free(err_msg);
-        return 1;
+        if (rc != SQLITE_OK) {
+            fprintf(stderr, "SQL error: %s\n", err_msg);
+            sqlite3_free(err_msg);
+            return -1;
+        }
+
+        int changes = sqlite3_changes(db);
+        printf("DEBUG - Rows affected: %d\n", changes);  // ADD THIS LINE
+        
+        if (changes == 0) {
+            return 1;
+        }
+
+        return 0;
     }
-
-    return 0;
-}
 
 int get_reservations_by_date(const char* date) {
     char sql[200];
